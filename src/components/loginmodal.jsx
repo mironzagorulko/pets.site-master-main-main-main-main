@@ -26,7 +26,7 @@ function LoginModal() {
     e.preventDefault();
     if (validateForm()) {
       alert('Вход успешен!');
-      navigate('/owner'); // Переход на страницу /owner после успешной валидации
+      navigate('/owner');
     }
   };
 

@@ -1,20 +1,18 @@
-import React from 'react';
-
-function SliderItem({ image, title, description, isActive }) {
+function SliderItem(props) {
   return (
-    <div className={`carousel-item ${isActive ? 'active' : ''}`}>
-      <img 
-        src={image} 
-        className="d-block w-100" 
-        alt={title} 
+    <div className={`carousel-item ${props.isActive ? 'active' : ''}`}>
+      <img
+        src={props.image}
+        className="d-block w-100"
+        alt={props.title}
         style={{
-          height: "400px", // Высота картинок в слайдере
-          objectFit: "cover", // Картинка обрезается, но занимает весь контейнер
-        }} 
+          height: '400px',
+          objectFit: 'cover',
+        }}
       />
-      <div className="text-center mt-3 text-light">
-        <h2 className="text-center">{title}</h2>
-        <p>{description}</p>
+      <div className="carousel-caption d-none d-md-block bg-dark bg-opacity-50 p-3 rounded">
+        <h5 className="text-light">{props.title}</h5> {/* Название животного */}
+        <p className="text-light">{props.description}</p> {/* Описание */}
       </div>
     </div>
   );

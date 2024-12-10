@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
+import SliderItem from '../components/slideritem';
 
 function Loader({ display }) {
   return (
@@ -21,37 +22,25 @@ function Slider() {
 
   const fetchSliderData = async () => {
     try {
-      const response = await fetch("https://pets.сделай.site/api/pets/slider");
+      const response = await fetch('https://pets.сделай.site/api/pets/slider');
       const data = await response.json();
+      console.log('Данные от сервера:', data); // Проверить, есть ли название животного
       setSliderData(data.data.pets || []);
       setLoading(false);
     } catch (error) {
-      console.error("Ошибка при загрузке данных:", error);
+      console.error('Ошибка при загрузке данных:', error);
       setLoading(false);
     }
   };
 
   const slides = sliderData.map((animal, index) => (
-    <div
+    <SliderItem
       key={index}
-      className={`carousel-item ${index === 0 ? "active" : ""}`}
-    >
-      <img
-        src={`https://pets.сделай.site/${animal.image}`}
-        className="d-block"
-        alt={animal.title}
-        style={{
-          width: "100%",
-          margin:"auto",
-          maxHeight: 400,
-          objectFit: "cover",
-        }}
-      />
-      <div className="carousel-caption d-none d-md-block bg-dark bg-opacity-50 p-3 rounded">
-        <h5 className="text-light">{animal.title}</h5>
-        <p className="text-light">{animal.description}</p>
-      </div>
-    </div>
+      image={`https://pets.сделай.site/${animal.image}`}
+      title={animal.kind} // Передаем название животного
+      description={animal.description} // Передаем описание
+      isActive={index === 0}
+    />
   ));
 
   const indicators = sliderData.map((_, index) => (
@@ -60,8 +49,8 @@ function Slider() {
       type="button"
       data-bs-target="#carouselExampleIndicators"
       data-bs-slide-to={index}
-      className={index === 0 ? "active" : ""}
-      aria-current={index === 0 ? "true" : undefined}
+      className={index === 0 ? 'active' : ''}
+      aria-current={index === 0 ? 'true' : undefined}
       aria-label={`Slide ${index + 1}`}
     />
   ));
@@ -74,7 +63,7 @@ function Slider() {
       >
         Найденные животные
       </h2>
-      <Loader display={{ display: loading ? "flex" : "none" }} />
+      <Loader display={{ display: loading ? 'flex' : 'none' }} />
       {!loading && (
         <div
           id="carouselExampleIndicators"
@@ -89,7 +78,6 @@ function Slider() {
             type="button"
             data-bs-target="#carouselExampleIndicators"
             data-bs-slide="prev"
-            style={{ marginBottom: 0 }}
           >
             <span className="carousel-control-prev-icon" aria-hidden="true" />
             <span className="visually-hidden">Предыдущий</span>
@@ -99,7 +87,6 @@ function Slider() {
             type="button"
             data-bs-target="#carouselExampleIndicators"
             data-bs-slide="next"
-            style={{ marginBottom: 0 }}
           >
             <span className="carousel-control-next-icon" aria-hidden="true" />
             <span className="visually-hidden">Следующий</span>
