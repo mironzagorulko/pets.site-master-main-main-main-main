@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import { Modal, Button, Form } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 
-function RegistrationModal() {
+function RegistrationModal({ show, onHide }) {
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -11,36 +13,32 @@ function RegistrationModal() {
   });
 
   const [errors, setErrors] = useState({});
+  const error_email = useRef();
+  const navigate = useNavigate();
 
   const validateForm = () => {
     const newErrors = {};
 
-    // Валидация имени
     if (!formData.name.match(/^[а-яА-ЯёЁ\s-]+$/)) {
       newErrors.name = 'Имя должно содержать только кириллицу, пробелы или дефисы.';
     }
 
-    // Валидация телефона
     if (!formData.phone.match(/^\+?\d+$/)) {
       newErrors.phone = 'Телефон должен содержать только цифры и знак +.';
     }
 
-    // Валидация email
     if (!formData.email.match(/^[\w.-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,}$/)) {
       newErrors.email = 'Некорректный формат email.';
     }
 
-    // Валидация пароля
     if (!formData.password.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{7,}$/)) {
       newErrors.password = 'Пароль должен быть не менее 7 символов, содержать цифру, строчную и заглавную буквы.';
     }
 
-    // Валидация подтверждения пароля
     if (formData.password !== formData.password_confirmation) {
       newErrors.password_confirmation = 'Пароли не совпадают.';
     }
 
-    // Валидация согласия на обработку данных
     if (!formData.confirm) {
       newErrors.confirm = 'Необходимо согласие на обработку персональных данных.';
     }
@@ -53,9 +51,35 @@ function RegistrationModal() {
     e.preventDefault();
 
     if (validateForm()) {
-      // Действия после успешной валидации
-      alert('Форма успешно отправлена!');
-      
+      const myHeaders = new Headers();
+      myHeaders.append("Content-Type", "application/json");
+      const raw = JSON.stringify(formData);
+      const requestOptions = {
+        method: "POST",
+        headers: myHeaders,
+        body: raw,
+      };
+
+      fetch("https://pets.сделай.site/api/register", requestOptions)
+        .then((response) => response.status)
+        .then((result) => {
+          if (result === 422) {
+            error_email.current.style.display = 'block';
+          } else {
+            error_email.current.style.display = 'none';
+            alert('Вы успешно зарегистрировались!');
+
+            // Закрытие модального окна
+            onHide();
+
+            // После успешной регистрации выполняем редирект на главную страницу
+            navigate("/"); // Переход на главную страницу
+          }
+        })
+        .catch((error) => {
+          console.error("Ошибка при отправке данных:", error);
+          alert('Произошла ошибка при отправке данных');
+        });
     }
   };
 
@@ -68,99 +92,97 @@ function RegistrationModal() {
   };
 
   return (
-    <div className="modal fade" id="registrationModal" tabIndex={-1} aria-labelledby="registrationModalLabel" aria-hidden="true">
-      <div className="modal-dialog">
-        <div className="modal-content">
-          <div className="modal-header">
-            <h5 className="modal-title" id="registrationModalLabel">Регистрация</h5>
-            <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Закрыть" />
-          </div>
-          <div className="modal-body">
-            <form id="registrationForm" noValidate onSubmit={handleSubmit}>
-              <div className="mb-3">
-                <label htmlFor="name" className="form-label">Имя</label>
-                <input
-                  type="text"
-                  className={`form-control ${errors.name ? 'is-invalid' : ''}`}
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                />
-                {errors.name && <div className="invalid-feedback">{errors.name}</div>}
-              </div>
-              <div className="mb-3">
-                <label htmlFor="phone" className="form-label">Телефон</label>
-                <input
-                  type="tel"
-                  className={`form-control ${errors.phone ? 'is-invalid' : ''}`}
-                  id="phone"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  required
-                />
-                {errors.phone && <div className="invalid-feedback">{errors.phone}</div>}
-              </div>
-              <div className="mb-3">
-                <label htmlFor="email" className="form-label">Email</label>
-                <input
-                  type="email"
-                  className={`form-control ${errors.email ? 'is-invalid' : ''}`}
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                />
-                {errors.email && <div className="invalid-feedback">{errors.email}</div>}
-              </div>
-              <div className="mb-3">
-                <label htmlFor="password" className="form-label">Пароль</label>
-                <input
-                  type="password"
-                  className={`form-control ${errors.password ? 'is-invalid' : ''}`}
-                  id="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                />
-                {errors.password && <div className="invalid-feedback">{errors.password}</div>}
-              </div>
-              <div className="mb-3">
-                <label htmlFor="password_confirmation" className="form-label">Подтверждение пароля</label>
-                <input
-                  type="password"
-                  className={`form-control ${errors.password_confirmation ? 'is-invalid' : ''}`}
-                  id="password_confirmation"
-                  name="password_confirmation"
-                  value={formData.password_confirmation}
-                  onChange={handleChange}
-                  required
-                />
-                {errors.password_confirmation && <div className="invalid-feedback">{errors.password_confirmation}</div>}
-              </div>
-              <div className="mb-3 form-check">
-                <input
-                  type="checkbox"
-                  className={`form-check-input ${errors.confirm ? 'is-invalid' : ''}`}
-                  id="confirm"
-                  name="confirm"
-                  checked={formData.confirm}
-                  onChange={handleChange}
-                  required
-                />
-                <label className="form-check-label" htmlFor="confirm">Согласие на обработку персональных данных</label>
-                {errors.confirm && <div className="invalid-feedback">{errors.confirm}</div>}
-              </div>
-              <button type="submit" className="btn btn-primary w-100">Зарегистрироваться</button>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
+    <Modal show={show} onHide={onHide} top>
+      <Modal.Header closeButton>
+        <Modal.Title>Регистрация</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <Form noValidate onSubmit={handleSubmit}>
+          <Form.Group controlId="name" className="mb-3">
+            <Form.Label>Имя</Form.Label>
+            <Form.Control
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              isInvalid={!!errors.name}
+              required
+            />
+            <Form.Control.Feedback type="invalid">{errors.name}</Form.Control.Feedback>
+          </Form.Group>
+
+          <Form.Group controlId="phone" className="mb-3">
+            <Form.Label>Телефон</Form.Label>
+            <Form.Control
+              type="tel"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              isInvalid={!!errors.phone}
+              required
+            />
+            <Form.Control.Feedback type="invalid">{errors.phone}</Form.Control.Feedback>
+          </Form.Group>
+
+          <Form.Group controlId="email" className="mb-3">
+            <Form.Label>Email</Form.Label>
+            <Form.Control
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              isInvalid={!!errors.email}
+              required
+            />
+            <p style={{ display: 'none', color: 'red' }} ref={error_email}>Такой адрес уже существует</p>
+            <Form.Control.Feedback type="invalid">{errors.email}</Form.Control.Feedback>
+          </Form.Group>
+
+          <Form.Group controlId="password" className="mb-3">
+            <Form.Label>Пароль</Form.Label>
+            <Form.Control
+              type="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              isInvalid={!!errors.password}
+              required
+            />
+            <Form.Control.Feedback type="invalid">{errors.password}</Form.Control.Feedback>
+          </Form.Group>
+
+          <Form.Group controlId="password_confirmation" className="mb-3">
+            <Form.Label>Подтверждение пароля</Form.Label>
+            <Form.Control
+              type="password"
+              name="password_confirmation"
+              value={formData.password_confirmation}
+              onChange={handleChange}
+              isInvalid={!!errors.password_confirmation}
+              required
+            />
+            <Form.Control.Feedback type="invalid">{errors.password_confirmation}</Form.Control.Feedback>
+          </Form.Group>
+
+          <Form.Group controlId="confirm" className="mb-3">
+            <Form.Check
+              type="checkbox"
+              name="confirm"
+              checked={formData.confirm}
+              onChange={handleChange}
+              label="Согласие на обработку персональных данных"
+              isInvalid={!!errors.confirm}
+              required
+            />
+            <Form.Control.Feedback type="invalid">{errors.confirm}</Form.Control.Feedback>
+          </Form.Group>
+
+          <Button variant="primary" type="submit" className="w-100">
+            Зарегистрироваться
+          </Button>
+        </Form>
+      </Modal.Body>
+    </Modal>
   );
 }
 

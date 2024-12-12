@@ -1,108 +1,136 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Импортируем useNavigate
+import { Modal, Button, Form } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 
-function LoginModal() {
+function LoginModal({ show, onHide }) {
   const [formData, setFormData] = useState({
-    login: '',
+    email: '',
     password: '',
     rememberMe: false,
   });
   const [errors, setErrors] = useState({});
-  const navigate = useNavigate(); // Используем useNavigate
+  const [loginError, setLoginError] = useState(''); // Стейт для отображения ошибки авторизации
+  const navigate = useNavigate();
 
+  // Валидация формы
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.login.match(/^[a-zA-Z0-9]+$/)) {
-      newErrors.login = 'Логин должен содержать только английские буквы и цифры.';
+    if (!formData.email.match(/^[\w.-]+@[a-zA-Z\d.-]+\.[a-zA-Z]{2,}$/)) {
+      newErrors.email = 'Пожалуйста, введите корректный email.';
     }
-    if (!formData.password.match(/^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)[A-Za-z\d]{7,}$/)) {
-      newErrors.password = 'Пароль должен быть не менее 7 символов и содержать хотя бы одну заглавную букву, одну строчную и одну цифру.';
+    if (!formData.password.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{7,}$/)) {
+      newErrors.password = 'Пароль должен быть не менее 7 символов, содержать цифру, строчную и заглавную буквы.';
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  // Обработчик отправки формы
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (validateForm()) {
-      alert('Вход успешен!');
-      navigate('/owner');
+      try {
+        // Отправка данных на сервер с помощью fetch
+        const response = await fetch('https://pets.сделай.site/api/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: formData.email, 
+            password: formData.password,
+          }),
+        });
+
+        const data = await response.json(); 
+
+        if (response.ok) {
+          // Сервер вернул успешный ответ, извлекаем токен
+          const { token } = data.data;
+          // Сохраняем токен в localStorage
+          localStorage.setItem('authToken', token);
+          navigate('/owner'); // Переход на страницу пользователя
+          onHide(); // Закрытие модального окна
+        } else {
+          // Сервер вернул ошибку (например, неверный логин или пароль)
+          setLoginError(data.error ? data.error.message : 'Неверный логин или пароль.');
+        }
+      } catch (error) {
+        
+        setLoginError('Произошла ошибка. Попробуйте снова.');
+      }
     }
   };
 
+  // Обработчик изменения данных формы
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData({
       ...formData,
       [name]: type === 'checkbox' ? checked : value,
     });
-  };
+  }
 
   return (
-    <div className="modal fade" id="loginModal" tabIndex={-1} aria-labelledby="loginModalLabel" aria-hidden="true">
-      <div className="modal-dialog">
-        <div className="modal-content">
-          <div className="modal-header">
-            <h5 className="modal-title" id="loginModalLabel">Вход</h5>
-            <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Закрыть" />
-          </div>
-          <div className="modal-body">
-            <form id="loginForm" noValidate onSubmit={handleSubmit}>
-              <div className="mb-3">
-                <label htmlFor="loginInput" className="form-label">
-                  <i className="bi bi-person" /> Логин
-                </label>
-                <input
-                  type="text"
-                  className={`form-control ${errors.login ? 'is-invalid' : ''}`}
-                  id="loginInput"
-                  name="login"
-                  placeholder="Введите логин"
-                  value={formData.login}
-                  onChange={handleChange}
-                  pattern="^[a-zA-Z0-9]+$"
-                  required
-                />
-                {errors.login && <div className="invalid-feedback">{errors.login}</div>}
-              </div>
-              <div className="mb-3">
-                <label htmlFor="passwordInput" className="form-label">
-                  <i className="bi bi-lock" /> Пароль
-                </label>
-                <input
-                  type="password"
-                  className={`form-control ${errors.password ? 'is-invalid' : ''}`}
-                  id="passwordInput"
-                  name="password"
-                  placeholder="Введите пароль"
-                  value={formData.password}
-                  onChange={handleChange}
-                  pattern="^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)[A-Za-z\d]{7,}$"
-                  minLength={7}
-                  required
-                />
-                {errors.password && <div className="invalid-feedback">{errors.password}</div>}
-              </div>
-              <div className="form-check mb-3">
-                <input
-                  type="checkbox"
-                  className="form-check-input"
-                  id="rememberMe"
-                  name="rememberMe"
-                  checked={formData.rememberMe}
-                  onChange={handleChange}
-                />
-                <label className="form-check-label" htmlFor="rememberMe">Запомнить меня</label>
-              </div>
-              <button type="submit" className="btn btn-primary w-100">Войти</button>
-            </form>
-            <div className="mt-3 text-center">
-              <a href="#" data-bs-toggle="modal" data-bs-target="#registrationModal">Регистрация</a>{' '} | <a href="#">Забыли пароль?</a>
-            </div>
-          </div>
+    <Modal show={show} onHide={onHide} top>
+      <Modal.Header closeButton>
+        <Modal.Title>Вход</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <Form id="loginForm" noValidate onSubmit={handleSubmit}>
+          <Form.Group controlId="emailInput" className="mb-3">
+            <Form.Label><i className="bi bi-person" /> Логин (Email)</Form.Label>
+            <Form.Control
+              type="email"
+              name="email"
+              placeholder="Введите email"
+              value={formData.email}
+              onChange={handleChange}
+              isInvalid={!!errors.email}
+              required
+            />
+            <Form.Control.Feedback type="invalid">
+              {errors.email}
+            </Form.Control.Feedback>
+          </Form.Group>
+
+          <Form.Group controlId="passwordInput" className="mb-3">
+            <Form.Label><i className="bi bi-lock" /> Пароль</Form.Label>
+            <Form.Control
+              type="password"
+              name="password"
+              placeholder="Введите пароль"
+              value={formData.password}
+              onChange={handleChange}
+              isInvalid={!!errors.password}
+              required
+            />
+            <Form.Control.Feedback type="invalid">
+              {errors.password}
+            </Form.Control.Feedback>
+          </Form.Group>
+
+          <Form.Group controlId="rememberMe" className="mb-3">
+            <Form.Check
+              type="checkbox"
+              label="Запомнить меня"
+              name="rememberMe"
+              checked={formData.rememberMe}
+              onChange={handleChange}
+            />
+          </Form.Group>
+
+          <Button type="submit" className="w-100" variant="primary">Войти</Button>
+
+          {/* Отображаем ошибку входа */}
+          {loginError && <div className="mt-3 text-danger text-center">{loginError}</div>}
+        </Form>
+
+        <div className="mt-3 text-center">
+          <a href="#">Регистрация</a>{' '} | <a href="#">Забыли пароль?</a>
         </div>
-      </div>
-    </div>
+      </Modal.Body>
+    </Modal>
   );
 }
 

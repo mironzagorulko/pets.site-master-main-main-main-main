@@ -1,10 +1,33 @@
-import React from "react";
-import RegistrationModal from "../components/registrationmodal"; 
+import React, { useState } from "react";
+import RegistrationModal from "../components/registrationmodal";
 import LoginModal from "../components/loginmodal";
 import logo from '../images/logo.jpg';
 import { Link } from 'react-router-dom';
 
 function Header() {
+  const [showRegistrationModal, setShowRegistrationModal] = useState(false); // Состояние для модального окна регистрации
+  const [showLoginModal, setShowLoginModal] = useState(false); // Состояние для модального окна входа
+
+  // Функция для открытия модального окна регистрации
+  const handleRegistrationModalOpen = () => {
+    setShowRegistrationModal(true);
+  };
+
+  // Функция для закрытия модального окна регистрации
+  const handleRegistrationModalClose = () => {
+    setShowRegistrationModal(false);
+  };
+
+  // Функция для открытия модального окна входа
+  const handleLoginModalOpen = () => {
+    setShowLoginModal(true);
+  };
+
+  // Функция для закрытия модального окна входа
+  const handleLoginModalClose = () => {
+    setShowLoginModal(false);
+  };
+
   return (
     <>
       <nav className="navbar navbar-expand-lg navbar-light bg-light">
@@ -29,7 +52,12 @@ function Header() {
                 <Link to="/" className="nav-link">Главная</Link>
               </li>
               <li className="nav-item">
-                <button type="button" className="btn btn-link nav-link" data-bs-toggle="modal" data-bs-target="#loginModal">
+                {/* Кнопка для открытия модального окна входа */}
+                <button 
+                  type="button" 
+                  className="btn btn-link nav-link" 
+                  onClick={handleLoginModalOpen}
+                >
                   Вход
                 </button>
               </li>
@@ -37,7 +65,12 @@ function Header() {
                 <Link to="/owner" className="nav-link">Личный кабинет</Link>
               </li>
               <li className="nav-item">
-                <button type="button" className="btn btn-link nav-link" data-bs-toggle="modal" data-bs-target="#registrationModal">
+                {/* Клик по тексту "Регистрация" открывает модальное окно */}
+                <button 
+                  type="button" 
+                  className="btn btn-link nav-link" 
+                  onClick={handleRegistrationModalOpen}
+                >
                   Регистрация
                 </button>
               </li>
@@ -69,8 +102,9 @@ function Header() {
         </div>
       </nav>
 
-      <RegistrationModal />
-      <LoginModal />
+      {/* Модальные окна */}
+      <RegistrationModal show={showRegistrationModal} onHide={handleRegistrationModalClose} />
+      <LoginModal show={showLoginModal} onHide={handleLoginModalClose} />
     </>
   );
 }
