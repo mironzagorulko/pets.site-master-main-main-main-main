@@ -11,7 +11,7 @@ function LoaderData() {
   fetch("https://pets.сделай.site/api/pets")
     .then((response) => response.json())
     .then(result => {
-      console.log(result); // Просмотрите, что приходит от сервера
+      console.log(result); 
       setCard(result);
     });
 }

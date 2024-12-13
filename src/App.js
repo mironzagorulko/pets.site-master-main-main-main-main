@@ -4,6 +4,7 @@ import Add_animal from '../src/pages/add_animal';
 import Owner from '../src/pages/owner';
 import Search from '../src/pages/search';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import AnimalDetails from './components/animaldetails';
 
 function App() {
   return (
@@ -21,7 +22,8 @@ function App() {
           
           {/* Страница поиска */}
           <Route path="/search" element={<Search />} />
-
+          
+          <Route path="/animaldetails/:id" element={<AnimalDetails />} />
          
 
         </Routes>

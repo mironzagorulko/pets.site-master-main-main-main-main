@@ -9,7 +9,7 @@ function LoginModal({ show, onHide }) {
     rememberMe: false,
   });
   const [errors, setErrors] = useState({});
-  const [loginError, setLoginError] = useState(''); // Стейт для отображения ошибки авторизации
+  const [loginError, setLoginError] = useState(''); 
   const navigate = useNavigate();
 
   // Валидация формы
@@ -53,7 +53,8 @@ function LoginModal({ show, onHide }) {
           onHide(); // Закрытие модального окна
         } else {
           // Сервер вернул ошибку (например, неверный логин или пароль)
-          setLoginError(data.error ? data.error.message : 'Неверный логин или пароль.');
+          
+          setLoginError('Ошибка: неверные данные.');
         }
       } catch (error) {
         
